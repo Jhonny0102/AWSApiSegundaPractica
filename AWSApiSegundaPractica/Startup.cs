@@ -1,7 +1,10 @@
 using AWSApiSegundaPractica.Data;
+using AWSApiSegundaPractica.Helpers;
+using AWSApiSegundaPractica.Models;
 using AWSApiSegundaPractica.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 
 namespace AWSApiSegundaPractica;
 
@@ -17,8 +20,11 @@ public class Startup
     // This method gets called by the runtime. Use this method to add services to the container
     public void ConfigureServices(IServiceCollection services)
     {
+        string jsonSecrets = HelperSecretManager.GetSecretsAsync().GetAwaiter().GetResult();
+        KeysModel keysModel = JsonConvert.DeserializeObject<KeysModel>(jsonSecrets);
+        services.AddSingleton<KeysModel>(x => keysModel);
         //
-        string connectionString = Configuration.GetConnectionString("MySql");
+        string connectionString = keysModel.MySql;
         services.AddTransient<RepositoryPractica>();
         services.AddDbContext<CategoriaContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
         services.AddDbContext<EventoContext>(options => options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
